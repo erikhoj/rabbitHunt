@@ -1,7 +1,6 @@
 #BlueJ class context
 comment0.params=model\ position
 comment0.target=Rabbit(Model,\ Position)
-comment0.text=\r\n\ In\ order\ to\ create\ a\ new\ Rabbit\ we\ need\ to\ provide\ a\r\n\ model\ og\ and\ position.\ Do\ not\ change\ the\ signature\ or\r\n\ first\ line\ of\ the\ construction.\ Appending\ code\ after\r\n\ the\ first\ line\ is\ allowed.\r\n
 comment1.params=
 comment1.target=Direction\ decideDirection()
 comment1.text=\r\n\ Decides\ in\ which\ direction\ the\ rabbit\ wants\ to\ move.\r\n

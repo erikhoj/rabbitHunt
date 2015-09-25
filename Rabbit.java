@@ -12,29 +12,58 @@ public class Rabbit extends Animal {
      * first line of the construction. Appending code after
      * the first line is allowed.
      */
-
+    
+    private boolean moveStraight;
+    private Direction result;
+    
     public Rabbit(Model model, Position position) {
         super(model, position);
+        moveStraight = false;
+        result = Direction.STAY;
     }
     
     /**
      * Decides in which direction the rabbit wants to move.
      */
     @Override
+    
     public Direction decideDirection() {
-        Direction result = Direction.STAY;
-        
+        return result;
+    }
+    
+    public Direction decideDirection2() {
         for(Direction d : Direction.allDirections()) {
             Class<?> c = look(d);
             
             if(c == Fox.class) {
-                    result = d;
-                    result = Direction.turn(result, 2);
+                if(distance(d) == 1 && moveStraight == false) {
+                    result = Direction.turn(d, 5);
+                    if(isOccupied(result)) {
+                        result = Direction.turn(result, -10);
+                        }
+                    moveStraight = true;
+                }
+                else if(moveStraight == true) {
+                    moveStraight = false;
+                }
                 }
         }
-       
+      
+        
+        return result;
+    }
+    
+    public Direction decideDirection1() {
+        for(Direction d : Direction.allDirections()) {
+            Class<?> c = look(d);
+            
+            if(c == Fox.class) {
+                    result = Direction.turn(d, 2);
+                }
+                }
+      
         if(isOccupied(result)) {
-            Direction.turn(result, -4);
+            result = Direction.turn(result, -2); 
         }
         
         return result;
