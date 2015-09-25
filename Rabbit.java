@@ -12,6 +12,7 @@ public class Rabbit extends Animal {
      * first line of the construction. Appending code after
      * the first line is allowed.
      */
+
     public Rabbit(Model model, Position position) {
         super(model, position);
     }
@@ -21,7 +22,34 @@ public class Rabbit extends Animal {
      */
     @Override
     public Direction decideDirection() {
-        return Direction.STAY;
+        Direction result = Direction.STAY;
+        
+        for(Direction d : Direction.allDirections()) {
+            Class<?> c = look(d);
+            
+            if(c == Fox.class) {
+                    result = d;
+                    result = Direction.turn(result, 2);
+                }
+        }
+        
+        System.out.println(result);
+        
+        result = checkIfOccupied(result);
+        
+        System.out.println(result);
+        System.out.println(distance(result));
+        
+        return result;
+    }
+    
+    public Direction checkIfOccupied(Direction result) {
+        if(distance(result) == 1) {
+                        if(look(result) == Bush.class || look(result) == Edge.class) {
+                            result = Direction.turn(result, -4);
+                        }
+                    }
+        return result;
     }
     
     /**
