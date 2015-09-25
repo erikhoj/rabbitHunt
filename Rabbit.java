@@ -32,21 +32,23 @@ public class Rabbit extends Animal {
                     result = Direction.turn(result, 2);
                 }
         }
-        
-        System.out.println(result);
-        
-        result = checkIfOccupied(result);
-        
-        System.out.println(result);
-        System.out.println(distance(result));
+       
+        if(isOccupied(result)) {
+            Direction.turn(result, -4);
+        }
         
         return result;
     }
     
-    public Direction checkIfOccupied(Direction result) {
-        if(distance(result) == 1) {
-                        if(look(result) == Bush.class || look(result) == Edge.class) {
-                            result = Direction.turn(result, -4);
+    public Boolean isOccupied(Direction d) {
+        boolean result = false;
+        
+        if(distance(d) == 1) {
+                        if(look(d) == Bush.class || 
+                        look(d) == Edge.class || 
+                        look(d) == Fox.class || 
+                        look(d) == Rabbit.class) {
+                            result = true;
                         }
                     }
         return result;
