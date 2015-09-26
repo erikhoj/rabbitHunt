@@ -46,7 +46,7 @@ public class Rabbit extends Animal {
     @Override
     
     public Direction decideDirection() {       
-        return result;
+        return decideDirection2();
     }
     
     private void getAngle(Direction d, Point oPos) {
