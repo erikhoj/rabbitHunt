@@ -34,6 +34,7 @@ public class Rabbit extends Animal {
     private static final double RABBIT_SCORE = 0;
     
     private boolean isBerserk;
+    private boolean standStill;
     
     public Rabbit(Model model, Position position) {
         super(model, position);
@@ -44,10 +45,10 @@ public class Rabbit extends Animal {
         bushPositions = new ArrayList<Position>();
         carrotPositions = new ArrayList<Position>();
         isBerserk = false;
-        
+        standStill = false;
         
         foxTimer = -1;
-        dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0};
+        dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
     
     /**
@@ -56,7 +57,8 @@ public class Rabbit extends Animal {
     @Override
     
     public Direction decideDirection() {
-        dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0};
+        dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
+        standStill = false;
         
         lookAround();
         
@@ -67,7 +69,7 @@ public class Rabbit extends Animal {
         
         System.out.println("Distance: " + distToEdge(2));
         
-        isBerserk = isBerserk();
+        isBerserk = isBeserk();
         
         System.out.println("New run");
         for(Direction d : Direction.allDirections()) {
@@ -76,7 +78,11 @@ public class Rabbit extends Animal {
         System.out.println("Fox: " + foxPosition);
         System.out.println("FoxTimer: " + foxTimer);
         
-        return findBestDirection();
+        result = findBestDirection();
+        if(standStill == true) {
+            result = Direction.STAY;
+        }
+        return result;
     }
     
     private Direction findBestDirection() {
@@ -141,24 +147,28 @@ public class Rabbit extends Animal {
                     if(dist < 2 && rad == 0) {
                         dScores[index]+= 5000;
                     }
-                    
-                    if(rad <= 
+                    else if(dist < 3 && rad == 0) {
+                        standStill = true;
+                    }
+                    else if(rad == 0) {
+                        dScores[index]+= 5000;
+                    }
                 }
-                
+
                 else{
-                if(dist < 2 && rad == Math.PI) {
-                    int lLiveZone = getIndex(Direction.turn(d,-1));
-                    int rLiveZone = getIndex(Direction.turn(d,1));
-                    dScores[lLiveZone]+= 5000;
-                    dScores[rLiveZone]+= 5000;  
-                }
+                    if(dist < 2 && rad == Math.PI) {
+                        int lLiveZone = getIndex(Direction.turn(d,-1));
+                        int rLiveZone = getIndex(Direction.turn(d,1));
+                        dScores[lLiveZone]+= 5000;
+                        dScores[rLiveZone]+= 5000;  
+                    }
                 
-                if(rad >= Math.PI/2) {
-                    rad = Math.PI - rad;
-                }
-                else if(rad <= Math.PI/4) {
-                    rad = 0;
-                }
+                    if(rad >= Math.PI/2) {
+                        rad = Math.PI - rad;
+                    }
+                    else if(rad <= Math.PI/4) {
+                        rad = 0;
+                    }
                 }
                 
                 dScores[index] = dScores[index] + (rad * FOX_SCORE)/(foxTimer * dist);

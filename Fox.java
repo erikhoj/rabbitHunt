@@ -37,6 +37,10 @@ public class Fox extends Animal {
             return latest;
         }
         
+        if(latest != Direction.STAY && canMove(latest)) {
+            return latest;
+        }
+        
         Direction direction = randomDirection();
         int i = 1;
         while(!canMove(direction) && i < 8) {
