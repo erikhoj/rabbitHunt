@@ -18,8 +18,10 @@ public class Benchmark
     private static final String creator = (new Rabbit(null, null)).getCreator();
 
     public static void runBenchmark() {
+        for(int i = 0; i < 50; i++) {
         model = new Model(NUMBER_OF_COLUMNS, NUMBER_OF_ROWS);
         countGames();
+    }
     }
 
     /**

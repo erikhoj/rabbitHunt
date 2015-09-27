@@ -20,11 +20,11 @@ public class Rabbit extends Animal {
     private boolean moveStraight;
     private Direction result;
     private Direction resultTask2;
-    private Position foxPosition;
+    private ArrayList<Position> foxPositions;
     private ArrayList<Position> bushPositions;
     private ArrayList<Position> carrotPositions;
     
-    private int foxTimer;
+    private ArrayList<Integer> foxTimers;
     
     private double[] dScores;
     
@@ -43,13 +43,13 @@ public class Rabbit extends Animal {
         result = Direction.STAY;
         resultTask2 = Direction.STAY;
         
-        foxPosition = null;
+        foxPositions = new ArrayList<Position>();
         bushPositions = new ArrayList<Position>();
         carrotPositions = new ArrayList<Position>();
         isBerserk = false;
         standStill = false;
         
-        foxTimer = -1;
+        foxTimers = new ArrayList<Integer>();
         dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
     
@@ -77,12 +77,11 @@ public class Rabbit extends Animal {
         for(Direction d : Direction.allDirections()) {
             System.out.println(d + ": " + dScores[getIndex(d)]);
         }
-        System.out.println("Fox: " + foxPosition);
-        System.out.println("FoxTimer: " + foxTimer);
+        
+        System.out.println(foxPositions);
+        System.out.println(foxTimers);
         
         result = findBestDirection();
-        
-        
         
         if(standStill == true) {
             result = Direction.STAY;
@@ -117,8 +116,9 @@ public class Rabbit extends Animal {
             Class<?> c = look(d);
             if(c == Fox.class) {
                Position foxPos = getObjectPos(d);
-               foxPosition = foxPos;
-               foxTimer = 1;
+               foxPositions.add(foxPos);
+               
+               foxTimers.add(1);
             }
             else if(c == Carrot.class) {
                 Position carrotPos = getObjectPos(d);
@@ -156,12 +156,15 @@ public class Rabbit extends Animal {
      * If the rabbit is berserk, move towards, and kill, the fox.
      */
     private void foxScore() {
-        if(foxPosition != null) {
+        for(Position fPos: foxPositions) {
+            int iFox = foxPositions.indexOf(fPos);
+            int foxTimer = foxTimers.get(iFox);
+            
             for(Direction d : Direction.allDirections()) {
                 int index = getIndex(d);
-                double rad = getAngle(d, foxPosition);
+                double rad = getAngle(d, fPos);
                 
-                double dist = getDistance(foxPosition);
+                double dist = getDistance(fPos);
                 
                 if(isBerserk) {
                     if(dist < 2 && rad == 0) {
@@ -197,16 +200,17 @@ public class Rabbit extends Animal {
                 
                 dScores[index] = dScores[index] + (rad * FOX_SCORE)/(foxTimer * dist);
             }
+            
             foxTimer++;
             
             if(foxTimer >= 10) {
-                foxTimer = 0;
-                foxPosition = null;
+                foxTimers.remove(foxTimer);
+                foxPositions.remove(fPos);
             }
         }
             
         }
-        
+          
         /**
          * Adds score to dScores[] based on the position of the bushes.
          */
