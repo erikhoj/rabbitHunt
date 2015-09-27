@@ -19,6 +19,7 @@ public class Rabbit extends Animal {
     
     private boolean moveStraight;
     private Direction result;
+    private Direction resultTask2;
     private Position foxPosition;
     private ArrayList<Position> bushPositions;
     private ArrayList<Position> carrotPositions;
@@ -28,8 +29,8 @@ public class Rabbit extends Animal {
     private double[] dScores;
     
     private static final double FOX_SCORE = 200;
-    private static final double BUSH_SCORE = 20;
-    private static final double CARROT_SCORE = 200;
+    private static final double BUSH_SCORE = 0;
+    private static final double CARROT_SCORE = 400;
     private static final double EDGE_SCORE = 50;
     private static final double RABBIT_SCORE = 0;
     
@@ -40,6 +41,7 @@ public class Rabbit extends Animal {
         super(model, position);
         moveStraight = false;
         result = Direction.STAY;
+        resultTask2 = Direction.STAY;
         
         foxPosition = null;
         bushPositions = new ArrayList<Position>();
@@ -85,6 +87,9 @@ public class Rabbit extends Animal {
         return result;
     }
     
+    /**
+     * Finds the best direction based on score.
+     */
     private Direction findBestDirection() {
         double bestScore = 0;
         Direction result = Direction.STAY;
@@ -99,6 +104,10 @@ public class Rabbit extends Animal {
         
         return result;
     }
+    
+    /**
+     * Looks around and adds whatever objects the rabbit can see to the position ArrayLists.
+     */
     
     private void lookAround() {
         for(Direction d : Direction.allDirections()) {
@@ -123,6 +132,10 @@ public class Rabbit extends Animal {
         }
     }
     
+    /**
+     * Returns the position of the object in direction d.
+     */
+    
     private Position getObjectPos(Direction d) {
         Position rPos = this.getPosition();
         Position dPos = directionToPosition(d);
@@ -135,6 +148,10 @@ public class Rabbit extends Animal {
         return newPos;
     }
     
+    /**
+     * Adds score to dScores[] based on the position of the foxes.
+     * If the rabbit is berserk, move towards, and kill, the fox.
+     */
     private void foxScore() {
         if(foxPosition != null) {
             for(Direction d : Direction.allDirections()) {
@@ -152,6 +169,10 @@ public class Rabbit extends Animal {
                     }
                     else if(rad == 0) {
                         dScores[index]+= 5000;
+                    }
+                    
+                    if(rad < Math.PI/2) {
+                        rad = Math.PI/2 - rad;
                     }
                 }
 
@@ -175,7 +196,7 @@ public class Rabbit extends Animal {
             }
             foxTimer++;
             
-            if(foxTimer >= 5) {
+            if(foxTimer >= 10) {
                 foxTimer = 0;
                 foxPosition = null;
             }
@@ -183,6 +204,9 @@ public class Rabbit extends Animal {
             
         }
         
+        /**
+         * Adds score to dScores[] based on the position of the bushes.
+         */
     private void bushScore() {
         for(Position bPos : bushPositions) {
             for(Direction d : Direction.allDirections()) {
@@ -200,9 +224,21 @@ public class Rabbit extends Animal {
         }
     }
     
+    /**
+     * Adds score to dScores[] based on the position of the carrots.
+     */
+    
     private void carrotScore() {
         for(Position cPos : carrotPositions) {
+            Position rPos = getPosition();
+                if(rPos.getColumn() == cPos.getColumn() && rPos.getRow() == cPos.getRow()) {
+                    carrotPositions.remove(cPos);
+                    break;
+                }
+            
             for(Direction d : Direction.allDirections()) {
+                
+                
                 int index = getIndex(d);
                 double rad = getAngle(d, cPos);
                 
@@ -214,6 +250,10 @@ public class Rabbit extends Animal {
             }
         }
     }
+    
+    /**
+     * Adds score to dScores[] based on the position of the rabbit compared to the edges.
+     */
     
     private void edgeScore() {
         for(int i = 0; i < 4; i++) {
@@ -249,6 +289,10 @@ public class Rabbit extends Animal {
         
     }
     
+    /**
+     * Returns the distance to an edge.
+     */
+    
     private int distToEdge(int edge) {
         // 0 == north, 1 == east, 2 == south, 3 == west
         Position rPos = this.getPosition();
@@ -273,6 +317,10 @@ public class Rabbit extends Animal {
         return result;
     }
     
+    /**
+     * Returns the distance between the rabbit and a Position.
+     */
+    
     private double getDistance(Position oPos) {
         Position vecPos = getVectorRO(oPos);
         double vecX = vecPos.getColumn();
@@ -287,6 +335,9 @@ public class Rabbit extends Animal {
         return result;
     }
     
+    /**
+     * Returns the "vector" Rabbit-Object.
+     */
     private Position getVectorRO(Position oPos) {
         Position rPos = this.getPosition();
         double rX = rPos.getColumn();
@@ -302,6 +353,9 @@ public class Rabbit extends Animal {
         return vecPos;
     }
     
+    /**
+     * Returns the index of direction d. This allows the program to associate the index of dScores[] and directions.
+     */
     private int getIndex(Direction d) {
         ArrayList<Direction> allDirections = new ArrayList<Direction>();
         for(Direction dir : Direction.allDirections()) {
@@ -310,6 +364,9 @@ public class Rabbit extends Animal {
         return allDirections.indexOf(d);
     }
     
+    /**
+     * Returns the angle between a direction and the vector from the rabbit to an object.
+     */
     private double getAngle(Direction d, Position oPos) {
         double result = 0;
         
@@ -335,36 +392,9 @@ public class Rabbit extends Animal {
         return result;
     }
     
-    private Direction vectorToDirection(Position vecPos) {
-        if(vecPos.getColumn() == 0 && vecPos.getRow() == -1) {
-            return Direction.N;
-        }
-        else if(vecPos.getColumn() == 1 && vecPos.getRow() == -1) {
-            return Direction.NE;
-        }
-        else if(vecPos.getColumn() == 1 && vecPos.getRow() == 0) {
-            return Direction.E;
-        }
-        else if(vecPos.getColumn() == 1 && vecPos.getRow() == 1) {
-            return Direction.SE;
-        }
-        else if(vecPos.getColumn()== 0 && vecPos.getRow() == 1) {
-            return Direction.S;
-        }
-        else if(vecPos.getColumn() == -1 && vecPos.getRow() == 1) {
-            return Direction.SW;
-        }
-        else if(vecPos.getColumn() == -1 && vecPos.getRow() == 0) {
-            return Direction.E;
-        }
-        else if(vecPos.getColumn() == -1 && vecPos.getRow() == -1) {
-            return Direction.NW;
-        }
-        
-        return null;
-        
-    }
-    
+    /**
+     * Converts a direction into its "vector".
+     */
     private Position directionToPosition(Direction d) {
         if(d == Direction.STAY) {
             return null;
@@ -397,16 +427,18 @@ public class Rabbit extends Animal {
         return null;
         }
     
-    
+    /**
+     * The function from task 2.
+     */
     private Direction decideDirection2() {
         for(Direction d : Direction.allDirections()) {
             Class<?> c = look(d);
             
             if(c == Fox.class) {
                 if(distance(d) == 1 && moveStraight == false) {
-                    result = Direction.turn(d, 5);
-                    if(isOccupied(result)) {
-                        result = Direction.turn(result, -10);
+                    resultTask2 = Direction.turn(d, 5);
+                    if(!canMove(resultTask2)) {
+                        result = Direction.turn(resultTask2, -10);
                         }
                     moveStraight = true;
                 }
@@ -416,44 +448,33 @@ public class Rabbit extends Animal {
                 }
         }
       
-        
-        return result;
+        return resultTask2;
     }
+    
+    /**
+     * The function from task 1.
+     */
     
     private Direction decideDirection1() {
         for(Direction d : Direction.allDirections()) {
             Class<?> c = look(d);
             
             if(c == Fox.class) {
-                    result = Direction.turn(d, 2);
+                    resultTask2 = Direction.turn(d, 2);
                 }
                 }
       
-        if(isOccupied(result)) {
-            result = Direction.turn(result, -2); 
+        if(!canMove(resultTask2)) {
+            resultTask2 = Direction.turn(result, -2); 
         }
         
-        return result;
-    }
-    
-    private Boolean isOccupied(Direction d) {
-        boolean result = false;
-        
-        if(distance(d) == 1) {
-                        if(look(d) == Bush.class || 
-                        look(d) == Edge.class || 
-                        look(d) == Fox.class || 
-                        look(d) == Rabbit.class) {
-                            result = true;
-                        }
-                    }
-        return result;
+        return resultTask2;
     }
     
     /**
      * This method is used to retrieve who the authors are.
      */
     public String getCreator() {
-        return "Unknown";
+        return "Erik Høj Petersen";
     }
 }
