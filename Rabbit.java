@@ -22,17 +22,18 @@ public class Rabbit extends Animal {
     private Position foxPosition;
     private ArrayList<Position> bushPositions;
     private ArrayList<Position> carrotPositions;
-    private ArrayList<Position> edgePositions;
     
     private int foxTimer;
     
     private double[] dScores;
     
-    private static final double FOX_SCORE = 100;
-    private static final double BUSH_SCORE = 0;
-    private static final double CARROT_SCORE = 100;
-    private static final double EDGE_SCORE = 30;
+    private static final double FOX_SCORE = 200;
+    private static final double BUSH_SCORE = 20;
+    private static final double CARROT_SCORE = 200;
+    private static final double EDGE_SCORE = 50;
     private static final double RABBIT_SCORE = 0;
+    
+    private boolean isBerserk;
     
     public Rabbit(Model model, Position position) {
         super(model, position);
@@ -42,8 +43,7 @@ public class Rabbit extends Animal {
         foxPosition = null;
         bushPositions = new ArrayList<Position>();
         carrotPositions = new ArrayList<Position>();
-        edgePositions = new ArrayList<Position>();
-        addEdges();
+        isBerserk = false;
         
         
         foxTimer = -1;
@@ -65,7 +65,9 @@ public class Rabbit extends Animal {
         edgeScore();
         foxScore();
         
-
+        System.out.println("Distance: " + distToEdge(2));
+        
+        isBerserk = isBerserk();
         
         System.out.println("New run");
         for(Direction d : Direction.allDirections()) {
@@ -90,34 +92,6 @@ public class Rabbit extends Animal {
         }
         
         return result;
-    }
-    
-    private void addEdges() {
-        for(int i = -1; i <= 20; i++) {
-            Position e1 = new Position(i, -1);
-            if(!edgePositions.contains(e1)) {
-                edgePositions.add(e1);
-            }
-            
-            Position e2 = new Position(i, 20);
-            edgePositions.add(e2);
-            if(!edgePositions.contains(e2)) {
-                edgePositions.add(e2);
-            }
-        }
-        for(int i = 0; i <= 19; i++) {
-            Position e3 = new Position(-1, i);
-            edgePositions.add(e3);
-            if(!edgePositions.contains(e3)) {
-                edgePositions.add(e3);
-            }
-            
-            Position e4 = new Position(20, i);
-            edgePositions.add(e4);
-            if(!edgePositions.contains(e4)) {
-                edgePositions.add(e4);
-            }
-        }
     }
     
     private void lookAround() {
@@ -163,6 +137,15 @@ public class Rabbit extends Animal {
                 
                 double dist = getDistance(foxPosition);
                 
+                if(isBerserk) {
+                    if(dist < 2 && rad == 0) {
+                        dScores[index]+= 5000;
+                    }
+                    
+                    if(rad <= 
+                }
+                
+                else{
                 if(dist < 2 && rad == Math.PI) {
                     int lLiveZone = getIndex(Direction.turn(d,-1));
                     int rLiveZone = getIndex(Direction.turn(d,1));
@@ -175,6 +158,7 @@ public class Rabbit extends Animal {
                 }
                 else if(rad <= Math.PI/4) {
                     rad = 0;
+                }
                 }
                 
                 dScores[index] = dScores[index] + (rad * FOX_SCORE)/(foxTimer * dist);
@@ -222,24 +206,61 @@ public class Rabbit extends Animal {
     }
     
     private void edgeScore() {
-        for(Position ePos : edgePositions) {
-            for(Direction d : Direction.allDirections()) {
-                int index = getIndex(d);
-                double rad = getAngle(d, ePos);
-                
-                double dist = getDistance(ePos);
-                
-                dScores[index] = dScores[index] + (rad * EDGE_SCORE)/dist;
-                
-                if(dist == 1 && rad == 0) {
-                    dScores[index] = -10000; 
-                    int lAdjacentEdge = getIndex(Direction.turn(d,-1));
-                    int rAdjacentEdge = getIndex(Direction.turn(d,1));
-                    dScores[lAdjacentEdge] = -10000;
-                    dScores[rAdjacentEdge] = -10000;  
-                }
+        for(int i = 0; i < 4; i++) {
+            Direction d = Direction.STAY;
+            
+            if(i == 0) {
+                d = Direction.N;
             }
+            else if(i == 1) {
+                d = Direction.E;
+            }
+            else if(i == 2) {
+               d = Direction.S; 
+            }
+            else if(i == 3) {
+               d = Direction.W;
+            }
+            
+            int dist = distToEdge(i);
+        
+            if(dist < 2) {
+                dScores[getIndex(d)] = -10000;
+                dScores[getIndex(Direction.turn(d, -1))] = -10000; 
+                dScores[getIndex(Direction.turn(d, 1))] = -10000;
+            }
+        
+            dScores[getIndex(Direction.turn(d, 4))]+= (1.5*EDGE_SCORE)/dist;
+            dScores[getIndex(Direction.turn(d, 3))]+= EDGE_SCORE/dist;
+            dScores[getIndex(Direction.turn(d, -3))]+= EDGE_SCORE/dist;
+            dScores[getIndex(Direction.turn(d, 2))]+= (0.5*EDGE_SCORE)/dist;
+            dScores[getIndex(Direction.turn(d, -2))]+= (0.5*EDGE_SCORE)/dist;
         }
+        
+    }
+    
+    private int distToEdge(int edge) {
+        // 0 == north, 1 == east, 2 == south, 3 == west
+        Position rPos = this.getPosition();
+        int rX = rPos.getColumn();
+        int rY = rPos.getRow();
+        
+        int result = 0;
+        
+        if(edge == 0) {
+            result = -(-1 - rY);
+        }
+        else if(edge == 1) {
+            result = 20 - rX;
+        }
+        else if(edge == 2) {
+            result = 20 - rY;
+        }
+        else if(edge == 3) {
+            result = -(-1 - rX);
+        }
+        
+        return result;
     }
     
     private double getDistance(Position oPos) {
