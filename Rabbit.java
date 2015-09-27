@@ -162,7 +162,7 @@ public class Rabbit extends Animal {
                 
                 if(isBerserk) {
                     if(dist < 2 && rad == 0) {
-                        dScores[index]+= 5000;
+                        dScores[index]+= 10000;
                     }
                     else if(dist < 3 && rad == 0) {
                         standStill = true;
