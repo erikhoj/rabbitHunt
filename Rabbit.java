@@ -20,24 +20,27 @@ public class Rabbit extends Animal {
     
     private boolean moveStraight;
     private Direction result;
-    private ArrayList<Point> foxes;
-    private ArrayList<Point> bushes;
-    private ArrayList<Point> carrots;
-    private ArrayList<Point> edges;
+    private ArrayList<Point> foxPositions;
+    private ArrayList<Point> bushPositions;
+    private ArrayList<Point> carrotPositions;
+    private ArrayList<Point> edgePositions;
     
-    private ArrayList<Integer> foxesTimer;
+    private ArrayList<Integer> foxTimers;
+    
+    private double[] dScores;
     
     public Rabbit(Model model, Position position) {
         super(model, position);
         moveStraight = false;
         result = Direction.STAY;
         
-        foxes = new ArrayList<Point>();
-        bushes = new ArrayList<Point>();
-        carrots = new ArrayList<Point>();
-        edges = new ArrayList<Point>();
+        foxPositions = new ArrayList<Point>();
+        bushPositions = new ArrayList<Point>();
+        carrotPositions = new ArrayList<Point>();
+        edgePositions = new ArrayList<Point>();
         
-        foxesTimer = new ArrayList<Integer>();
+        foxTimers = new ArrayList<Integer>();
+        dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0};
     }
     
     /**
@@ -45,15 +48,45 @@ public class Rabbit extends Animal {
      */
     @Override
     
-    public Direction decideDirection() {       
+    public Direction decideDirection() {
+        
         return decideDirection2();
     }
     
-    private void getAngle(Direction d, Point oPos) {
-        
+    private void foxScore() {
+        for(Point oPos : foxPositions) {
+            for(Direction d : Direction.allDirections()) {
+                int index = getIndex(d);
+                double rad = getAngle(d, oPos);
+                
+                dScores[index] = dScores[index] + rad;
+            }
+        }
     }
     
-    private Point directionToVector(Direction d) {
+    private int getIndex(Direction d) {
+        ArrayList<Direction> allDirections = new ArrayList<Direction>();
+        for(Direction dir : Direction.allDirections()) {
+            allDirections.add(dir);
+        }
+        return allDirections.indexOf(d);
+    }
+    
+    private double getAngle(Direction d, Point oPos) {
+        double result = 0;
+        
+        Point dPos = directionToPoint(d);
+        double dX = dPos.getX();
+        double dY = dPos.getY();
+        double oX = oPos.getX();
+        double oY = oPos.getY();
+        
+        result = Math.atan2(dY,dX) - Math.atan2(oY,oX);
+        
+        return result;
+    }
+    
+    private Point directionToPoint(Direction d) {
         if(d == Direction.STAY) {
             return null;
         }
