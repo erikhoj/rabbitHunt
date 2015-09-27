@@ -28,9 +28,9 @@ public class Rabbit extends Animal {
     
     private double[] dScores;
     
-    private static final double FOX_SCORE = 200;
+    private static final double FOX_SCORE = 250;
     private static final double BUSH_SCORE = 0;
-    private static final double CARROT_SCORE = 400;
+    private static final double CARROT_SCORE = 200;
     private static final double EDGE_SCORE = 50;
     private static final double RABBIT_SCORE = 0;
     
@@ -81,6 +81,9 @@ public class Rabbit extends Animal {
         System.out.println("FoxTimer: " + foxTimer);
         
         result = findBestDirection();
+        
+        
+        
         if(standStill == true) {
             result = Direction.STAY;
         }
@@ -475,6 +478,6 @@ public class Rabbit extends Animal {
      * This method is used to retrieve who the authors are.
      */
     public String getCreator() {
-        return "Erik Høj Petersen";
+        return "Gruppe DA2 - 05 Erik Høj Petersen 201507288, Jeppe Løvstad 201506166";
     }
 }
