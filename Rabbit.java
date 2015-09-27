@@ -6,7 +6,6 @@
  * @version September 8, 2015
  */
 
-import java.awt.Point;
 import java.lang.Math;
 import java.util.ArrayList;
 
@@ -20,12 +19,12 @@ public class Rabbit extends Animal {
     
     private boolean moveStraight;
     private Direction result;
-    private ArrayList<Point> foxPositions;
-    private ArrayList<Point> bushPositions;
-    private ArrayList<Point> carrotPositions;
-    private ArrayList<Point> edgePositions;
+    private Position foxPosition;
+    private ArrayList<Position> bushPositions;
+    private ArrayList<Position> carrotPositions;
+    private ArrayList<Position> edgePositions;
     
-    private ArrayList<Integer> foxTimers;
+    private int foxTimer;
     
     private double[] dScores;
     
@@ -34,12 +33,12 @@ public class Rabbit extends Animal {
         moveStraight = false;
         result = Direction.STAY;
         
-        foxPositions = new ArrayList<Point>();
-        bushPositions = new ArrayList<Point>();
-        carrotPositions = new ArrayList<Point>();
-        edgePositions = new ArrayList<Point>();
+        foxPosition = null;
+        bushPositions = new ArrayList<Position>();
+        carrotPositions = new ArrayList<Position>();
+        edgePositions = new ArrayList<Position>();
         
-        foxTimers = new ArrayList<Integer>();
+        foxTimer = -1;
         dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0};
     }
     
@@ -49,20 +48,63 @@ public class Rabbit extends Animal {
     @Override
     
     public Direction decideDirection() {
+        dScores = new double[]{0, 0, 0, 0, 0, 0, 0, 0};
         
-        return decideDirection2();
+        lookAround();
+        
+        foxScore();
+        
+        System.out.println("New run");
+        
+        for(Direction d : Direction.allDirections()) {
+            System.out.println(d);
+            int index = getIndex(d);
+            System.out.println(dScores[index]);
+        }
+
+        return decideDirection1();
     }
     
-    private void foxScore() {
-        for(Point oPos : foxPositions) {
-            for(Direction d : Direction.allDirections()) {
-                int index = getIndex(d);
-                double rad = getAngle(d, oPos);
-                
-                dScores[index] = dScores[index] + rad;
+    private void lookAround() {
+        for(Direction d : Direction.allDirections()) {
+            Class<?> c = look(d);
+            if(c == Fox.class) {
+               Position foxPos = getObjectPos(d);
+               foxPosition = foxPos;
+               foxTimer = 1;
             }
         }
     }
+    
+    private Position getObjectPos(Direction d) {
+        Position rPos = this.getPosition();
+        Position dPos = directionToPosition(d);
+
+        int newColumn = rPos.getColumn() + (distance(d) * dPos.getColumn());
+        int newRow = rPos.getRow() + (distance(d) * dPos.getRow());
+        
+        Position newPos = new Position(newColumn, newRow);
+        
+        return newPos;
+    }
+    
+    private void foxScore() {
+        if(foxPosition != null) {
+            for(Direction d : Direction.allDirections()) {
+                int index = getIndex(d);
+                double rad = getAngle(d, foxPosition);
+                
+                dScores[index] = (dScores[index] + rad)/foxTimer;
+            }
+            foxTimer++;
+                
+            if(foxTimer >= 10) {
+                foxTimer = 0;
+                foxPosition = null;
+            }
+        }
+            
+        }
     
     private int getIndex(Direction d) {
         ArrayList<Direction> allDirections = new ArrayList<Direction>();
@@ -72,47 +114,62 @@ public class Rabbit extends Animal {
         return allDirections.indexOf(d);
     }
     
-    private double getAngle(Direction d, Point oPos) {
+    private double getAngle(Direction d, Position oPos) {
         double result = 0;
         
-        Point dPos = directionToPoint(d);
-        double dX = dPos.getX();
-        double dY = dPos.getY();
-        double oX = oPos.getX();
-        double oY = oPos.getY();
+        Position dPos = directionToPosition(d);
+        double dX = dPos.getColumn();
+        double dY = dPos.getRow();
+        double oX = oPos.getColumn();
+        double oY = oPos.getRow();
         
-        result = Math.atan2(dY,dX) - Math.atan2(oY,oX);
+        Position rPos = this.getPosition();
+        double rX = rPos.getColumn();
+        double rY = rPos.getRow();
+        
+        double oRVecX = oX - rX;
+        double oRVecY = oY - rY;
+        
+        result = Math.atan2(dY,dX) - Math.atan2(oRVecY,oRVecX);
+        
+        if(result < 0) {
+            result = -1 * result;
+        }
+        
+        if(result > Math.PI) {
+            result = 2*Math.PI - result;
+        }
         
         return result;
     }
     
-    private Point directionToPoint(Direction d) {
+    private Position directionToPosition(Direction d) {
         if(d == Direction.STAY) {
             return null;
         }
         else if(d == Direction.N) {
-            return new Point(0,1);
+            return new Position(0,-1);
         }
         else if(d == Direction.NE) {
-            return new Point(1,1);
+            return new Position(1,-1);
         }
         else if(d == Direction.E) {
-            return new Point(1,0);
+            return new Position(1,0);
         }
         else if(d == Direction.SE) {
-            return new Point(1,-1);
+            return new Position(1,1);
         }
         else if(d == Direction.S) {
-            return new Point(0,-1);
+            return new Position(0,1);
         }
         else if(d == Direction.SW) {
-            return new Point(-1,-1);
+            return new Position(-1,1);
         }
         else if(d == Direction.W) {
-            return new Point(-1,0);
+            return new Position(-1,0);
         }
         else if(d == Direction.NW) {
-            return new Point(-1,1);
+            return new Position(-1,-1);
         }
         
         return null;
